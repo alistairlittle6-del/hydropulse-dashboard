@@ -323,8 +323,7 @@ export default function SanzonateDashboard() {
               <span style={{width:5,height:5,borderRadius:"50%",background:C.cyan,display:"inline-block"}}/>
               Powered by HydroPulse
             </span>
-            <span style={{color:"#222"}}>·</span>
-            <span>Probionate Holdings Ltd</span>
+            
           </span>
         </footer>
       </main>
