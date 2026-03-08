@@ -321,7 +321,7 @@ export default function SanzonateDashboard() {
           <span style={{display:"flex",alignItems:"center",gap:10}}>
             <span style={{display:"flex",alignItems:"center",gap:5}}>
               <span style={{width:5,height:5,borderRadius:"50%",background:C.cyan,display:"inline-block"}}/>
-              Powered by HydroPulse
+              Powered by Flow
             </span>
             
           </span>
