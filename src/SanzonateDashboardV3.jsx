@@ -10,10 +10,7 @@ const C = {
 
 // ─── DEMO CREDENTIALS ──────────────────────────────────────
 const DEMO_USERS = [
-  { username: "admin", password: "sanzonate", role: "admin", name: "Sanzonate Admin" },
-  { username: "iss", password: "demo", role: "operator", name: "ISS Facilities", operator: "ISS" },
-  { username: "sodexo", password: "demo", role: "operator", name: "Sodexo France", operator: "Sodexo" },
-  { username: "applegreen", password: "demo", role: "operator", name: "Applegreen Ireland", operator: "Applegreen" },
+  { username: "sanzonatedemo", password: "HydroPulse123!", role: "admin", name: "Sanzonate Admin" },
 ];
 
 // ─── USAGE DATA ───────────────────────────────────────────
@@ -108,15 +105,6 @@ function LoginScreen({onLogin}) {
             {loading?"Signing in...":"Sign In"}
           </button>
         </form>
-        <div style={{marginTop:24,padding:"14px 16px",background:"#050508",borderRadius:10,border:`1px solid ${C.cardBorder}`}}>
-          <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Demo Accounts</div>
-          <div style={{fontSize:11,color:C.textSec,lineHeight:1.8}}>
-            <span style={{color:C.cyan}}>admin</span> / sanzonate — Full access<br/>
-            <span style={{color:C.cyan}}>iss</span> / demo — ISS only<br/>
-            <span style={{color:C.cyan}}>sodexo</span> / demo — Sodexo only<br/>
-            <span style={{color:C.cyan}}>applegreen</span> / demo — Applegreen only
-          </div>
-        </div>
       </div>
     </div>
   );
