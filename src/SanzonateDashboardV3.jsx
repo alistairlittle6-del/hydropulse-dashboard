@@ -8,12 +8,10 @@ const C = {
   text: "#ffffff", textSec: "#8a9bb5", textMuted: "#4a5568",
 };
 
-// ─── DEMO CREDENTIALS ──────────────────────────────────────
 const DEMO_USERS = [
   { username: "sanzonatedemo", password: "HydroPulse123!", role: "admin", name: "Sanzonate Admin" },
 ];
 
-// ─── USAGE DATA ───────────────────────────────────────────
 const DEMO_UNITS = [
   { id: "HP-A1B2C3", name: "Kitchen",       site: "Applegreen, Balbriggan M1",  operator: "Applegreen", country: "IE", status: "active",  totalLitres: 18420, todayLitres: 145, currentFlow: 2.4, lastSeen: new Date(), product: "Aquaflow 1 GPM", live: false, installed: "2025-09-15" },
   { id: "HP-D4E5F6", name: "Food Court",    site: "Applegreen, Balbriggan M1",  operator: "Applegreen", country: "IE", status: "active",  totalLitres: 12350, todayLitres: 98,  currentFlow: 1.8, lastSeen: new Date(), product: "Aquaflow Mini",  live: false, installed: "2025-10-02" },
@@ -43,14 +41,14 @@ const DEMO_UNITS = [
   { id: "HP-D5E6F7", name: "Central Kitchen",  site: "All Bar One, Birmingham",     operator: "Mitchells & Butlers", country: "GB", status: "active",  totalLitres: 16400, todayLitres: 128, currentFlow: 2.3, lastSeen: new Date(), product: "Aquaflow 1 GPM", live: false, installed: "2025-12-01" },
 ];
 
-function genDaily(baseFlow=150,days=30) { const d=[]; for(let i=days;i>=0;i--){ const t=new Date(Date.now()-i*86400000); const wknd=t.getDay()===0||t.getDay()===6; d.push({date:t.toLocaleDateString("en-GB",{day:"numeric",month:"short"}),litres:Math.round(baseFlow+Math.random()*(baseFlow*0.4)+(wknd?-baseFlow*0.3:baseFlow*0.15))}); } return d; }
-function genHourly(baseFlow=8) { const d=[]; for(let h=0;h<24;h++) d.push({hour:`${h.toString().padStart(2,"0")}:00`,litres:Math.round((h>=7&&h<=22?baseFlow+Math.random()*baseFlow*1.5:0.5+Math.random()*baseFlow*0.15)*10)/10}); return d; }
-function genWeekly(baseFlow=1000,weeks=12) { const d=[]; for(let i=weeks;i>=0;i--){ const t=new Date(Date.now()-i*7*86400000); d.push({week:`W${Math.ceil((t.getDate())/7)} ${t.toLocaleDateString("en-GB",{month:"short"})}`,litres:Math.round(baseFlow+Math.random()*baseFlow*0.3)}); } return d; }
-function timeAgo(d) { const diff=Date.now()-new Date(d).getTime(); if(diff<60000)return"now"; if(diff<3600000)return Math.floor(diff/60000)+"m"; return Math.floor(diff/3600000)+"h"; }
+function genDaily(b=150,d=30){const r=[];for(let i=d;i>=0;i--){const t=new Date(Date.now()-i*86400000);const w=t.getDay()===0||t.getDay()===6;r.push({date:t.toLocaleDateString("en-GB",{day:"numeric",month:"short"}),litres:Math.round(b+Math.random()*(b*0.4)+(w?-b*0.3:b*0.15))});}return r;}
+function genHourly(b=8){const r=[];for(let h=0;h<24;h++)r.push({hour:`${h.toString().padStart(2,"0")}:00`,litres:Math.round((h>=7&&h<=22?b+Math.random()*b*1.5:0.5+Math.random()*b*0.15)*10)/10});return r;}
+function genWeekly(b=1000,w=12){const r=[];for(let i=w;i>=0;i--){const t=new Date(Date.now()-i*7*86400000);r.push({week:`W${Math.ceil(t.getDate()/7)} ${t.toLocaleDateString("en-GB",{month:"short"})}`,litres:Math.round(b+Math.random()*b*0.3)});}return r;}
+function timeAgo(d){const diff=Date.now()-new Date(d).getTime();if(diff<60000)return"now";if(diff<3600000)return Math.floor(diff/60000)+"m";return Math.floor(diff/3600000)+"h";}
 
-function Ripple({size=200,opacity=0.06,animate=false}) {
+function Ripple({size=200,opacity=0.06,animate=false}){
   const rings=[0.18,0.30,0.42,0.56,0.72,0.90];
-  return (<svg width={size} height={size} viewBox="0 0 200 200" style={{position:"absolute",opacity,pointerEvents:"none"}}>
+  return(<svg width={size} height={size} viewBox="0 0 200 200" style={{position:"absolute",opacity,pointerEvents:"none"}}>
     {rings.map((r,i)=>(<circle key={i} cx="100" cy="100" r={r*100} fill="none" stroke={i<2?C.cyan:i<4?C.blue:C.ring} strokeWidth={i<2?2:1.5} opacity={1-i*0.15}>{animate&&<animate attributeName="r" values={`${r*100};${r*100+4};${r*100}`} dur={`${3+i*0.5}s`} repeatCount="indefinite"/>}</circle>))}
     <circle cx="100" cy="100" r="12" fill={C.cyan} opacity="0.8"/>
   </svg>);
@@ -63,47 +61,31 @@ const hdSub={fontSize:11,color:"#4a5568",fontWeight:400,marginLeft:8};
 const tdS={padding:"11px 12px",color:"#8a9bb5"};
 const thS={padding:"9px 12px",textAlign:"left",color:"#4a5568",fontWeight:600,fontSize:9.5,textTransform:"uppercase",letterSpacing:"0.1em",borderBottom:"1px solid #1a1a2e"};
 const ttS={background:"#0a0a0f",border:"1px solid #1a1a2e",borderRadius:8,fontSize:11,color:"#fff"};
+const backBtn={background:"none",border:"none",color:C.cyan,fontSize:13,fontFamily:"inherit",cursor:"pointer",padding:"8px 0",marginBottom:16,display:"flex",alignItems:"center",gap:6};
 
-// ─── LOGIN SCREEN ─────────────────────────────────────────
-function LoginScreen({onLogin}) {
-  const [user,setUser]=useState("");
-  const [pass,setPass]=useState("");
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(false);
-  const handleSubmit=(e)=>{
-    e.preventDefault();
-    setLoading(true);setError("");
-    setTimeout(()=>{
-      const found=DEMO_USERS.find(u=>u.username===user.toLowerCase()&&u.password===pass);
-      if(found){onLogin(found)}else{setError("Invalid credentials");setLoading(false);}
-    },800);
-  };
-  const inp={width:"100%",padding:"14px 16px",borderRadius:10,border:`1px solid ${C.cardBorder}`,background:"#050508",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none",transition:"border-color .2s"};
+// ─── LOGIN ────────────────────────────────────────────────
+function LoginScreen({onLogin}){
+  const[user,setUser]=useState("");const[pass,setPass]=useState("");const[error,setError]=useState("");const[loading,setLoading]=useState(false);
+  const handleSubmit=(e)=>{e.preventDefault();setLoading(true);setError("");
+    setTimeout(()=>{const found=DEMO_USERS.find(u=>u.username.toLowerCase()===user.toLowerCase()&&u.password===pass);if(found){onLogin(found)}else{setError("Invalid credentials");setLoading(false);}},800);};
+  const inp={width:"100%",padding:"14px 16px",borderRadius:10,border:`1px solid ${C.cardBorder}`,background:"#050508",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none"};
   return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit','Helvetica Neue',sans-serif"}}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)"}}>
-        <Ripple size={400} opacity={0.03} animate/>
-      </div>
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)"}}><Ripple size={400} opacity={0.03} animate/></div>
       <div style={{width:380,padding:"48px 36px",background:C.card,borderRadius:20,border:`1px solid ${C.cardBorder}`,position:"relative",zIndex:1}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:56,height:56,borderRadius:12,objectFit:"cover",marginBottom:16}} onError={(e)=>{e.target.style.display="none"}}/>
+          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:56,height:56,borderRadius:12,objectFit:"cover",marginBottom:16}} onError={e=>{e.target.style.display="none"}}/>
           <div style={{fontSize:20,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",color:C.text}}>SANZ<span style={{color:C.cyan}}>O</span>NATE</div>
           <div style={{fontSize:11,color:C.textMuted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:6}}>Aquaflow Impact Portal</div>
         </div>
         <form onSubmit={handleSubmit}>
-          <div style={{marginBottom:14}}>
-            <label style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"block"}}>Username</label>
-            <input value={user} onChange={e=>setUser(e.target.value)} style={inp} placeholder="Enter username" autoComplete="username"/>
-          </div>
-          <div style={{marginBottom:24}}>
-            <label style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"block"}}>Password</label>
-            <input value={pass} onChange={e=>setPass(e.target.value)} type="password" style={inp} placeholder="Enter password" autoComplete="current-password"/>
-          </div>
+          <div style={{marginBottom:14}}><label style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"block"}}>Username</label>
+            <input value={user} onChange={e=>setUser(e.target.value)} style={inp} placeholder="Enter username" autoComplete="username"/></div>
+          <div style={{marginBottom:24}}><label style={{fontSize:11,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"block"}}>Password</label>
+            <input value={pass} onChange={e=>setPass(e.target.value)} type="password" style={inp} placeholder="Enter password" autoComplete="current-password"/></div>
           {error&&<div style={{color:C.red,fontSize:12,marginBottom:14,textAlign:"center"}}>{error}</div>}
-          <button type="submit" disabled={loading} style={{width:"100%",padding:"14px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,color:"#fff",fontSize:14,fontWeight:600,fontFamily:"inherit",cursor:loading?"wait":"pointer",opacity:loading?0.7:1,transition:"opacity .2s",letterSpacing:"0.03em"}}>
-            {loading?"Signing in...":"Sign In"}
-          </button>
+          <button type="submit" disabled={loading} style={{width:"100%",padding:"14px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,color:"#fff",fontSize:14,fontWeight:600,fontFamily:"inherit",cursor:loading?"wait":"pointer",opacity:loading?0.7:1,letterSpacing:"0.03em"}}>{loading?"Signing in...":"Sign In"}</button>
         </form>
       </div>
     </div>
@@ -111,17 +93,14 @@ function LoginScreen({onLogin}) {
 }
 
 // ─── UNIT DETAIL VIEW ─────────────────────────────────────
-function UnitDetail({unit,onBack}) {
+function UnitDetail({unit,onBack}){
   const dailyData=useMemo(()=>genDaily(unit.todayLitres),[unit.id]);
-  const hourlyData=useMemo(()=>genHourly(unit.currentFlow*3),[unit.id]);
+  const hourlyData=useMemo(()=>genHourly(unit.currentFlow*3||5),[unit.id]);
   const weeklyData=useMemo(()=>genWeekly(unit.todayLitres*7),[unit.id]);
   const prodColor=unit.product.includes("3 GPM")?C.cyan:unit.product.includes("Maxi")?C.purple:unit.product.includes("Mini")?C.amber:C.textSec;
   return(
     <div>
-      <button onClick={onBack} style={{background:"none",border:"none",color:C.cyan,fontSize:13,fontFamily:"inherit",cursor:"pointer",padding:"8px 0",marginBottom:16,display:"flex",alignItems:"center",gap:6}}>
-        <span style={{fontSize:18}}>←</span> Back to Fleet
-      </button>
-      {/* Unit header */}
+      <button onClick={onBack} style={backBtn}><span style={{fontSize:18}}>←</span> Back to Site</button>
       <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"32px 36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
         <div style={{position:"absolute",right:-30,top:-30}}><Ripple size={200} opacity={0.04} animate/></div>
         <div style={{position:"relative",zIndex:1}}>
@@ -135,61 +114,30 @@ function UnitDetail({unit,onBack}) {
           <div style={{fontSize:12,color:C.textMuted}}>Serial: <span style={{fontFamily:"monospace",color:C.textSec}}>{unit.id}</span> · Operator: {unit.operator} · Installed: {unit.installed}</div>
         </div>
       </div>
-      {/* KPI cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
-        {[
-          {val:`${unit.currentFlow.toFixed(1)}`,unit:"L/min",label:"Current Flow",color:C.cyan},
-          {val:`${unit.todayLitres.toLocaleString()}`,unit:"L",label:"Today",color:C.green},
-          {val:`${unit.totalLitres.toLocaleString()}`,unit:"L",label:"All Time",color:C.blue},
-          {val:unit.status==="active"?timeAgo(unit.lastSeen):"Offline",unit:"",label:"Last Seen",color:unit.status==="active"?C.green:C.red},
-        ].map((c,i)=>(
+        {[{val:`${unit.currentFlow.toFixed(1)}`,u:"L/min",label:"Current Flow",color:C.cyan},{val:`${unit.todayLitres.toLocaleString()}`,u:"L",label:"Today",color:C.green},{val:`${unit.totalLitres.toLocaleString()}`,u:"L",label:"All Time",color:C.blue},{val:unit.status==="active"?timeAgo(unit.lastSeen):"Offline",u:"",label:"Last Seen",color:unit.status==="active"?C.green:C.red}].map((c,i)=>(
           <div key={i} style={{background:C.card,borderRadius:12,padding:"20px 18px",border:`1px solid ${C.cardBorder}`}}>
             <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{c.label}</div>
-            <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-              <span style={{fontSize:28,fontWeight:800,color:c.color}}>{c.val}</span>
-              <span style={{fontSize:13,color:C.textMuted}}>{c.unit}</span>
-            </div>
-          </div>
-        ))}
+            <div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{fontSize:28,fontWeight:800,color:c.color}}>{c.val}</span><span style={{fontSize:13,color:C.textMuted}}>{c.u}</span></div>
+          </div>))}
       </div>
-      {/* Daily production chart */}
       <div className="fi" style={{...panel,marginBottom:14}}>
         <h3 style={hd}>Daily Production <span style={hdSub}>30 days</span></h3>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={dailyData} barSize={8}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/>
-            <XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${v}L`}/>
-            <Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/>
-            <Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/>
-          </BarChart>
+          <BarChart data={dailyData} barSize={8}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/><Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/></BarChart>
         </ResponsiveContainer>
       </div>
-      {/* Hourly + Weekly side by side */}
       <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
         <div style={{...panel,flex:"1 1 300px"}}>
           <h3 style={hd}>Today's Pattern <span style={hdSub}>hourly</span></h3>
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={hourlyData}>
-              <defs><linearGradient id="uGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.green} stopOpacity={0.15}/><stop offset="100%" stopColor={C.green} stopOpacity={0}/></linearGradient></defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/>
-              <XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/>
-              <Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/>
-              <Area type="monotone" dataKey="litres" stroke={C.green} fill="url(#uGrad)" strokeWidth={1.5} dot={false}/>
-            </AreaChart>
+            <AreaChart data={hourlyData}><defs><linearGradient id="uGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.green} stopOpacity={0.15}/><stop offset="100%" stopColor={C.green} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/><Area type="monotone" dataKey="litres" stroke={C.green} fill="url(#uGrad)" strokeWidth={1.5} dot={false}/></AreaChart>
           </ResponsiveContainer>
         </div>
         <div style={{...panel,flex:"1 1 300px"}}>
           <h3 style={hd}>Weekly Trend <span style={hdSub}>12 weeks</span></h3>
           <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/>
-              <XAxis dataKey="week" tick={{fill:C.textMuted,fontSize:8}} interval={1} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${(v/1000).toFixed(1)}k`}/>
-              <Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v.toLocaleString()}L`,"Weekly"]}/>
-              <Line type="monotone" dataKey="litres" stroke={C.purple} strokeWidth={2} dot={{r:3,fill:C.purple}} activeDot={{r:5}}/>
-            </LineChart>
+            <LineChart data={weeklyData}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="week" tick={{fill:C.textMuted,fontSize:8}} interval={1} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${(v/1000).toFixed(1)}k`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v.toLocaleString()}L`,"Weekly"]}/><Line type="monotone" dataKey="litres" stroke={C.purple} strokeWidth={2} dot={{r:3,fill:C.purple}} activeDot={{r:5}}/></LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -197,34 +145,82 @@ function UnitDetail({unit,onBack}) {
   );
 }
 
-// ─── MAIN DASHBOARD ───────────────────────────────────────
-export default function SanzonateDashboard() {
-  const [user,setUser]=useState(null);
-  const [units,setUnits]=useState(DEMO_UNITS);
-  const [selectedUnit,setSelectedUnit]=useState(null);
-  const [dailyData]=useState(()=>genDaily(2400));
-  const [hourlyData]=useState(()=>genHourly(60));
+// ─── SITE DETAIL VIEW ─────────────────────────────────────
+function SiteDetail({siteName,siteUnits,onBack,onSelectUnit}){
+  const totalL=siteUnits.reduce((s,u)=>s+u.totalLitres,0);
+  const todayL=siteUnits.reduce((s,u)=>s+u.todayLitres,0);
+  const active=siteUnits.filter(u=>u.status==="active").length;
+  const country=siteUnits[0]?.country;
+  const operator=siteUnits[0]?.operator;
+  const dailyData=useMemo(()=>genDaily(todayL),[siteName]);
+  return(
+    <div>
+      <button onClick={onBack} style={backBtn}><span style={{fontSize:18}}>←</span> Back to Overview</button>
+      <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"32px 36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
+        <div style={{position:"absolute",right:-30,top:-30}}><Ripple size={200} opacity={0.04} animate/></div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:600,marginBottom:10}}>Site Overview</div>
+          <div style={{fontSize:24,fontWeight:700,color:C.text,marginBottom:6}}>{FL[country]} {siteName}</div>
+          <div style={{fontSize:13,color:C.textSec,marginBottom:16}}>Operator: {operator} · {siteUnits.length} units · {active} online</div>
+          <div style={{display:"flex",gap:32,flexWrap:"wrap"}}>
+            <div><span style={{fontSize:28,fontWeight:800,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
+            <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:28,fontWeight:800,color:C.blue}}>{totalL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>all time</span></div>
+          </div>
+        </div>
+      </div>
+      <div className="fi" style={{...panel,marginBottom:24}}>
+        <h3 style={hd}>Daily Site Production <span style={hdSub}>30 days</span></h3>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={dailyData} barSize={7}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/><Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/></BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="fi" style={{...panel}}>
+        <h3 style={hd}>Devices at this Site <span style={hdSub}>{siteUnits.length} units</span></h3>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12.5}}>
+            <thead><tr>{["","Serial","Unit","Product","Today","All Time","Flow / Status"].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead>
+            <tbody>
+              {siteUnits.map(u=>{
+                const pc=u.product.includes("3 GPM")?C.cyan:u.product.includes("Maxi")?C.purple:u.product.includes("Mini")?C.amber:C.textMuted;
+                const pb=u.product.includes("3 GPM")?"rgba(0,200,255,.08)":u.product.includes("Maxi")?"rgba(180,122,255,.08)":u.product.includes("Mini")?"rgba(255,184,0,.08)":"rgba(255,255,255,.04)";
+                return(
+                  <tr key={u.id} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>onSelectUnit(u)}>
+                    <td style={tdS}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:u.status==="active"?C.green:C.red,boxShadow:`0 0 8px ${u.status==="active"?"rgba(0,232,157,.35)":"rgba(255,68,88,.3)"}`}}/></td>
+                    <td style={{...tdS,fontFamily:"monospace",fontSize:10,color:C.textMuted}}>{u.id}</td>
+                    <td style={{...tdS,fontWeight:600,color:C.text}}>{u.name}</td>
+                    <td style={tdS}><span style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:pb,color:pc,fontWeight:500}}>{u.product}</span></td>
+                    <td style={{...tdS,color:C.cyan,fontWeight:600}}>{u.todayLitres}L</td>
+                    <td style={{...tdS,color:C.textSec}}>{u.totalLitres.toLocaleString()}L</td>
+                    <td style={tdS}>{u.status==="active"?(<span style={{display:"flex",alignItems:"center",gap:5}}><span style={{color:C.cyan,fontWeight:600}}>{u.currentFlow.toFixed(1)}</span><span style={{color:C.textMuted,fontSize:10}}>L/min</span></span>):(<span style={{padding:"2px 10px",borderRadius:10,fontSize:9.5,background:"rgba(255,68,88,.08)",color:C.red,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>Offline · {timeAgo(u.lastSeen)}</span>)}</td>
+                  </tr>);
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  // Simulate live data updates
+// ─── MAIN DASHBOARD ───────────────────────────────────────
+export default function SanzonateDashboard(){
+  const[user,setUser]=useState(null);
+  const[units,setUnits]=useState(DEMO_UNITS);
+  const[view,setView]=useState({level:"overview"});// level: overview | site | unit
+  const[dailyData]=useState(()=>genDaily(2400));
+  const[hourlyData]=useState(()=>genHourly(60));
+
   useEffect(()=>{
-    const simIv=setInterval(()=>{
-      setUnits(p=>p.map(u=>{
-        if(u.status==="offline")return u;
-        return{...u,
-          currentFlow:Math.max(0.1,+(u.currentFlow+(Math.random()-0.45)*0.5).toFixed(2)),
-          todayLitres:u.todayLitres+Math.round(u.currentFlow/10),
-          totalLitres:u.totalLitres+Math.round(u.currentFlow/10),
-          lastSeen:new Date(),
-        };
-      }));
-    },3000);
+    const simIv=setInterval(()=>{setUnits(p=>p.map(u=>{
+      if(u.status==="offline")return u;
+      return{...u,currentFlow:Math.max(0.1,+(u.currentFlow+(Math.random()-0.45)*0.5).toFixed(2)),todayLitres:u.todayLitres+Math.round(u.currentFlow/10),totalLitres:u.totalLitres+Math.round(u.currentFlow/10),lastSeen:new Date()};
+    }));},3000);
     return()=>clearInterval(simIv);
   },[]);
 
-  // Filter units by user role
   const visibleUnits=user?.role==="operator"?units.filter(u=>u.operator===user.operator):units;
 
-  if(!user) return <LoginScreen onLogin={setUser}/>;
+  if(!user)return<LoginScreen onLogin={setUser}/>;
 
   const totalL=visibleUnits.reduce((s,u)=>s+u.totalLitres,0);
   const todayL=visibleUnits.reduce((s,u)=>s+u.todayLitres,0);
@@ -238,7 +234,96 @@ export default function SanzonateDashboard() {
   visibleUnits.forEach(u=>{if(!siteMap[u.site])siteMap[u.site]={litres:0,today:0,units:0,operator:u.operator,country:u.country,sts:[]};siteMap[u.site].litres+=u.totalLitres;siteMap[u.site].today+=u.todayLitres;siteMap[u.site].units+=1;siteMap[u.site].sts.push(u.status);});
   const siteS=Object.entries(siteMap).sort((a,b)=>b[1].litres-a[1].litres);
 
-  return (
+  const goHome=()=>setView({level:"overview"});
+
+  // Render content based on current view level
+  const renderContent=()=>{
+    if(view.level==="unit"){
+      const unit=visibleUnits.find(u=>u.id===view.unitId);
+      if(!unit)return null;
+      return<UnitDetail unit={unit} onBack={()=>setView({level:"site",siteName:unit.site})}/>;
+    }
+    if(view.level==="site"){
+      const siteUnits=visibleUnits.filter(u=>u.site===view.siteName);
+      return<SiteDetail siteName={view.siteName} siteUnits={siteUnits} onBack={goHome} onSelectUnit={u=>setView({level:"unit",unitId:u.id})}/>;
+    }
+    // Overview
+    return(
+      <>
+        <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
+          <div style={{position:"absolute",right:-40,top:-40}}><Ripple size={280} opacity={0.05} animate/></div>
+          <div style={{position:"absolute",left:-60,bottom:-60}}><Ripple size={180} opacity={0.03}/></div>
+          <div style={{position:"relative",zIndex:1}}>
+            <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:600,marginBottom:12}}>Total Aqueous Ozone Produced · {user.role==="operator"?user.name:"Sanzonate Aquaflow Fleet"}</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:64,fontWeight:900,lineHeight:1,letterSpacing:"-0.04em",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{(totalL/1000).toFixed(1)}</span>
+              <span style={{fontSize:28,fontWeight:400,color:C.textSec}}>m³</span>
+              <span style={{fontSize:15,color:C.textMuted,marginLeft:8}}>({totalL.toLocaleString()} litres)</span>
+            </div>
+            <div style={{marginTop:16,display:"flex",gap:32,flexWrap:"wrap"}}>
+              <div><span style={{fontSize:24,fontWeight:700,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.text}}>{active}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>units active</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.green}}>{siteS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>sites</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.amber}}>{opS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>operators</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="fi" style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap",animationDelay:".15s"}}>
+          <div style={{...panel,flex:"2 1 500px"}}>
+            <h3 style={hd}>Daily Aquaflow Production <span style={hdSub}>30 days · all sites</span></h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={dailyData} barSize={6}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={36} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/><Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/></BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{...panel,flex:"1 1 300px"}}>
+            <h3 style={hd}>Today's Pattern <span style={hdSub}>hourly</span></h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={hourlyData}><defs><linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.cyan} stopOpacity={0.15}/><stop offset="100%" stopColor={C.cyan} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/><Area type="monotone" dataKey="litres" stroke={C.cyan} fill="url(#aGrad)" strokeWidth={1.5} dot={false} name="Litres"/></AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="fi" style={{...panel,marginBottom:24,animationDelay:".25s"}}>
+          <h3 style={hd}>Operator Leaderboard <span style={hdSub}>by total production</span></h3>
+          {opS.map(([name,data],i)=>{const mL=opS[0][1].litres;return(
+            <div key={name} className="rh" style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:8,marginBottom:4,transition:"background .15s"}}>
+              <span style={{fontSize:18,width:28,textAlign:"center"}}>{i===0?"\u{1F947}":i===1?"\u{1F948}":i===2?"\u{1F949}":`${i+1}.`}</span>
+              <span style={{fontSize:16}}>{FL[data.country]||""}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"baseline",gap:8}}><span style={{fontSize:14,fontWeight:600}}>{name}</span><span style={{fontSize:11,color:C.textMuted}}>{data.sites.size} sites · {data.units} units</span></div>
+                <div style={{height:4,borderRadius:2,background:"#111122",marginTop:6}}><div style={{height:"100%",borderRadius:2,background:`linear-gradient(90deg,${C.cyan}88,${C.cyan})`,width:`${(data.litres/mL)*100}%`,transition:"width .6s"}}/></div>
+              </div>
+              <div style={{textAlign:"right",minWidth:100}}><div style={{fontSize:16,fontWeight:700,color:C.cyan}}>{(data.litres/1000).toFixed(1)}k L</div><div style={{fontSize:11,color:C.textMuted}}>+{data.today.toLocaleString()}L today</div></div>
+            </div>);})}
+        </div>
+
+        {/* SITE COMPARISON — clickable rows */}
+        <div className="fi" style={{...panel,marginBottom:24,animationDelay:".3s"}}>
+          <h3 style={hd}>Sites <span style={hdSub}>{siteS.length} sites · click to view</span></h3>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12.5}}>
+              <thead><tr>{["","Site","Operator","Units","Today","All Time","Status"].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead>
+              <tbody>
+                {siteS.map(([name,data])=>{const allOn=data.sts.every(s=>s==="active");const anyOff=data.sts.some(s=>s==="offline");return(
+                  <tr key={name} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>setView({level:"site",siteName:name})}>
+                    <td style={tdS}><span style={{fontSize:14}}>{FL[data.country]}</span></td>
+                    <td style={{...tdS,fontWeight:600,color:C.text}}>{name} <span style={{fontSize:10,color:C.cyan,marginLeft:4}}>→</span></td>
+                    <td style={{...tdS,color:C.textMuted,fontSize:11}}>{data.operator}</td>
+                    <td style={{...tdS,color:C.textSec}}>{data.units}</td>
+                    <td style={{...tdS,color:C.cyan,fontWeight:600}}>{data.today.toLocaleString()}L</td>
+                    <td style={{...tdS,color:C.textSec}}>{data.litres.toLocaleString()}L</td>
+                    <td style={tdS}><span style={{display:"inline-flex",alignItems:"center",gap:5}}><span style={{width:7,height:7,borderRadius:"50%",background:anyOff?C.red:C.green,boxShadow:`0 0 8px ${anyOff?"rgba(255,68,88,.3)":"rgba(0,232,157,.35)"}`}}/><span style={{fontSize:11,color:allOn?C.green:C.red}}>{allOn?"All online":`${data.sts.filter(s=>s==="offline").length} offline`}</span></span></td>
+                  </tr>);})}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  return(
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Outfit','Helvetica Neue',sans-serif"}}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
       <style>{`
@@ -250,17 +335,10 @@ export default function SanzonateDashboard() {
         .clickrow:hover{background:rgba(0,200,255,.05)!important}
       `}</style>
 
-      {/* HEADER */}
       <header style={{height:60,padding:"0 28px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.cardBorder}`,background:"linear-gradient(180deg,#080810 0%,#000 100%)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:14,cursor:"pointer"}} onClick={()=>setSelectedUnit(null)}>
-          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:36,height:36,borderRadius:8,objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}}/>
-          <svg width="30" height="30" viewBox="0 0 34 34">
-            <circle cx="17" cy="17" r="16" fill="none" stroke={C.ring} strokeWidth="0.7" opacity="0.4"/>
-            <circle cx="17" cy="17" r="12" fill="none" stroke={C.blue} strokeWidth="0.8" opacity="0.5"/>
-            <circle cx="17" cy="17" r="8.5" fill="none" stroke={C.cyan} strokeWidth="1" opacity="0.7"/>
-            <circle cx="17" cy="17" r="5" fill="none" stroke={C.cyan} strokeWidth="1.2"/>
-            <circle cx="17" cy="17" r="2.5" fill={C.cyan}/>
-          </svg>
+        <div style={{display:"flex",alignItems:"center",gap:14,cursor:"pointer"}} onClick={goHome}>
+          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:36,height:36,borderRadius:8,objectFit:"cover"}} onError={e=>{e.target.style.display="none"}}/>
+          <svg width="30" height="30" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="none" stroke={C.ring} strokeWidth="0.7" opacity="0.4"/><circle cx="17" cy="17" r="12" fill="none" stroke={C.blue} strokeWidth="0.8" opacity="0.5"/><circle cx="17" cy="17" r="8.5" fill="none" stroke={C.cyan} strokeWidth="1" opacity="0.7"/><circle cx="17" cy="17" r="5" fill="none" stroke={C.cyan} strokeWidth="1.2"/><circle cx="17" cy="17" r="2.5" fill={C.cyan}/></svg>
           <span style={{fontSize:17,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase"}}>SANZ<span style={{color:C.cyan}}>O</span>NATE</span>
           <span style={{fontSize:9,color:C.textMuted,letterSpacing:"0.1em",textTransform:"uppercase",paddingLeft:14,borderLeft:`1px solid ${C.cardBorder}`}}>Aquaflow Impact Portal</span>
         </div>
@@ -269,7 +347,7 @@ export default function SanzonateDashboard() {
             <span style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:11,color:C.textSec}}>{active}/{visibleUnits.length} Online</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer"}} onClick={()=>{setUser(null);setSelectedUnit(null);}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer"}} onClick={()=>{setUser(null);setView({level:"overview"});}}>
             <span style={{fontSize:11,color:C.textSec}}>{user.name}</span>
             <span style={{fontSize:10,color:C.textMuted}}>Sign out</span>
           </div>
@@ -277,165 +355,10 @@ export default function SanzonateDashboard() {
       </header>
 
       <main style={{maxWidth:1340,margin:"0 auto",padding:"32px 24px"}}>
-
-        {selectedUnit ? (
-          <UnitDetail unit={selectedUnit} onBack={()=>setSelectedUnit(null)}/>
-        ) : (
-          <>
-            {/* ── HERO ── */}
-            <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
-              <div style={{position:"absolute",right:-40,top:-40}}><Ripple size={280} opacity={0.05} animate/></div>
-              <div style={{position:"absolute",left:-60,bottom:-60}}><Ripple size={180} opacity={0.03}/></div>
-              <div style={{position:"relative",zIndex:1}}>
-                <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:600,marginBottom:12}}>Total Aqueous Ozone Produced · {user.role==="operator"?user.name:"Sanzonate Aquaflow Fleet"}</div>
-                <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
-                  <span style={{fontSize:64,fontWeight:900,lineHeight:1,letterSpacing:"-0.04em",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{(totalL/1000).toFixed(1)}</span>
-                  <span style={{fontSize:28,fontWeight:400,color:C.textSec}}>m³</span>
-                  <span style={{fontSize:15,color:C.textMuted,marginLeft:8}}>({totalL.toLocaleString()} litres)</span>
-                </div>
-                <div style={{marginTop:16,display:"flex",gap:32,flexWrap:"wrap"}}>
-                  <div><span style={{fontSize:24,fontWeight:700,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
-                  <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.text}}>{active}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>units active</span></div>
-                  <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.green}}>{siteS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>sites</span></div>
-                  <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.amber}}>{opS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>operators</span></div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── CHARTS ── */}
-            <div className="fi" style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap",animationDelay:".15s"}}>
-              <div style={{...panel,flex:"2 1 500px"}}>
-                <h3 style={hd}>Daily Aquaflow Production <span style={hdSub}>30 days · all sites</span></h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={dailyData} barSize={6}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/>
-                    <XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/>
-                    <YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={36} tickFormatter={v=>`${v}L`}/>
-                    <Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/>
-                    <Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{...panel,flex:"1 1 300px"}}>
-                <h3 style={hd}>Today's Pattern <span style={hdSub}>hourly</span></h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={hourlyData}>
-                    <defs><linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.cyan} stopOpacity={0.15}/><stop offset="100%" stopColor={C.cyan} stopOpacity={0}/></linearGradient></defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/>
-                    <XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/>
-                    <YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/>
-                    <Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/>
-                    <Area type="monotone" dataKey="litres" stroke={C.cyan} fill="url(#aGrad)" strokeWidth={1.5} dot={false} name="Litres"/>
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* ── OPERATOR LEADERBOARD ── */}
-            <div className="fi" style={{...panel,marginBottom:24,animationDelay:".25s"}}>
-              <h3 style={hd}>Operator Leaderboard <span style={hdSub}>by total production</span></h3>
-              {opS.map(([name,data],i)=>{
-                const mL=opS[0][1].litres;
-                return(
-                  <div key={name} className="rh" style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:8,marginBottom:4,transition:"background .15s"}}>
-                    <span style={{fontSize:18,width:28,textAlign:"center"}}>{i===0?"\u{1F947}":i===1?"\u{1F948}":i===2?"\u{1F949}":`${i+1}.`}</span>
-                    <span style={{fontSize:16}}>{FL[data.country]||""}</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                        <span style={{fontSize:14,fontWeight:600}}>{name}</span>
-                        <span style={{fontSize:11,color:C.textMuted}}>{data.sites.size} sites · {data.units} units</span>
-                      </div>
-                      <div style={{height:4,borderRadius:2,background:"#111122",marginTop:6}}>
-                        <div style={{height:"100%",borderRadius:2,background:`linear-gradient(90deg,${C.cyan}88,${C.cyan})`,width:`${(data.litres/mL)*100}%`,transition:"width .6s"}}/>
-                      </div>
-                    </div>
-                    <div style={{textAlign:"right",minWidth:100}}>
-                      <div style={{fontSize:16,fontWeight:700,color:C.cyan}}>{(data.litres/1000).toFixed(1)}k L</div>
-                      <div style={{fontSize:11,color:C.textMuted}}>+{data.today.toLocaleString()}L today</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* ── SITE COMPARISON ── */}
-            <div className="fi" style={{...panel,marginBottom:24,animationDelay:".3s"}}>
-              <h3 style={hd}>Site Comparison <span style={hdSub}>{siteS.length} sites</span></h3>
-              <div style={{overflowX:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12.5}}>
-                  <thead><tr>{["","Site","Operator","Units","Today","All Time","Status"].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead>
-                  <tbody>
-                    {siteS.map(([name,data])=>{
-                      const allOn=data.sts.every(s=>s==="active");
-                      const anyOff=data.sts.some(s=>s==="offline");
-                      return(
-                        <tr key={name} className="rh" style={{borderBottom:"1px solid #0a0a14",transition:"background .15s"}}>
-                          <td style={tdS}><span style={{fontSize:14}}>{FL[data.country]}</span></td>
-                          <td style={{...tdS,fontWeight:600,color:C.text}}>{name}</td>
-                          <td style={{...tdS,color:C.textMuted,fontSize:11}}>{data.operator}</td>
-                          <td style={{...tdS,color:C.textSec}}>{data.units}</td>
-                          <td style={{...tdS,color:C.cyan,fontWeight:600}}>{data.today.toLocaleString()}L</td>
-                          <td style={{...tdS,color:C.textSec}}>{data.litres.toLocaleString()}L</td>
-                          <td style={tdS}>
-                            <span style={{display:"inline-flex",alignItems:"center",gap:5}}>
-                              <span style={{width:7,height:7,borderRadius:"50%",background:anyOff?C.red:C.green,boxShadow:`0 0 8px ${anyOff?"rgba(255,68,88,.3)":"rgba(0,232,157,.35)"}`}}/>
-                              <span style={{fontSize:11,color:allOn?C.green:C.red}}>{allOn?"All online":`${data.sts.filter(s=>s==="offline").length} offline`}</span>
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* ── AQUAFLOW FLEET ── */}
-            <div className="fi" style={{...panel,animationDelay:".35s"}}>
-              <h3 style={hd}>Aquaflow Fleet <span style={hdSub}>{visibleUnits.length} units · {siteS.length} sites · {opS.length} operators</span></h3>
-              <div style={{overflowX:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12.5}}>
-                  <thead><tr>{["","Serial","Unit","Site","Product","Today","All Time","Flow / Status"].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead>
-                  <tbody>
-                    {visibleUnits.map(u=>{
-                      const prodColor=u.product.includes("3 GPM")?C.cyan:u.product.includes("Maxi")?C.purple:u.product.includes("Mini")?C.amber:C.textMuted;
-                      const prodBg=u.product.includes("3 GPM")?"rgba(0,200,255,.08)":u.product.includes("Maxi")?"rgba(180,122,255,.08)":u.product.includes("Mini")?"rgba(255,184,0,.08)":"rgba(255,255,255,.04)";
-                      return(
-                        <tr key={u.id} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>setSelectedUnit(u)}>
-                          <td style={tdS}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:u.status==="active"?C.green:C.red,boxShadow:`0 0 8px ${u.status==="active"?"rgba(0,232,157,.35)":"rgba(255,68,88,.3)"}`}}/></td>
-                          <td style={{...tdS,fontFamily:"monospace",fontSize:10,color:C.textMuted}}>{u.id}</td>
-                          <td style={{...tdS,fontWeight:600,color:C.text}}>{u.name}</td>
-                          <td style={tdS}><span style={{fontSize:12}}>{FL[u.country]} </span><span style={{color:C.textSec}}>{u.site}</span></td>
-                          <td style={tdS}><span style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:prodBg,color:prodColor,fontWeight:500}}>{u.product}</span></td>
-                          <td style={{...tdS,color:C.cyan,fontWeight:600}}>{u.todayLitres}L</td>
-                          <td style={{...tdS,color:C.textSec}}>{u.totalLitres.toLocaleString()}L</td>
-                          <td style={tdS}>
-                            {u.status==="active"?(
-                              <span style={{display:"flex",alignItems:"center",gap:5}}>
-                                <span style={{color:C.cyan,fontWeight:600}}>{u.currentFlow.toFixed(1)}</span>
-                                <span style={{color:C.textMuted,fontSize:10}}>L/min</span>
-                              </span>
-                            ):(
-                              <span style={{padding:"2px 10px",borderRadius:10,fontSize:9.5,background:"rgba(255,68,88,.08)",color:C.red,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>Offline · {timeAgo(u.lastSeen)}</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* FOOTER */}
+        {renderContent()}
         <footer style={{marginTop:28,paddingTop:18,borderTop:`1px solid ${C.cardBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:10.5,color:C.textMuted,flexWrap:"wrap",gap:8}}>
           <span>© {new Date().getFullYear()} Sanzonate Global Inc. · Aqueous Ozone On Demand</span>
-          <span style={{display:"flex",alignItems:"center",gap:5}}>
-            <span style={{width:5,height:5,borderRadius:"50%",background:C.cyan,display:"inline-block"}}/>
-            Powered by Flow
-          </span>
+          <span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:5,height:5,borderRadius:"50%",background:C.cyan,display:"inline-block"}}/>Powered by Flow</span>
         </footer>
       </main>
     </div>
