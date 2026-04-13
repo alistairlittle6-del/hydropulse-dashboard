@@ -73,7 +73,7 @@ function LoginScreen({onLogin}){
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit','Helvetica Neue',sans-serif"}}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
       <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)"}}><Ripple size={400} opacity={0.03} animate/></div>
-      <div style={{width:380,padding:"48px 36px",background:C.card,borderRadius:20,border:`1px solid ${C.cardBorder}`,position:"relative",zIndex:1}}>
+      <div style={{width:"90%",maxWidth:380,padding:"48px 36px",background:C.card,borderRadius:20,border:`1px solid ${C.cardBorder}`,position:"relative",zIndex:1}}>
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:56,height:56,borderRadius:12,objectFit:"cover",marginBottom:16}} onError={e=>{e.target.style.display="none"}}/>
           <div style={{fontSize:20,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",color:C.text}}>SANZ<span style={{color:C.cyan}}>O</span>NATE</div>
@@ -92,6 +92,18 @@ function LoginScreen({onLogin}){
   );
 }
 
+// ─── LOADING SCREEN ───────────────────────────────────────
+function LoadingScreen(){
+  return(
+    <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit','Helvetica Neue',sans-serif",flexDirection:"column",gap:20}}>
+      <Ripple size={120} opacity={0.15} animate/>
+      <div style={{position:"relative",zIndex:1,textAlign:"center",marginTop:80}}>
+        <div style={{fontSize:14,color:C.textSec,fontWeight:500}}>Loading dashboard...</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── UNIT DETAIL VIEW ─────────────────────────────────────
 function UnitDetail({unit,onBack}){
   const dailyData=useMemo(()=>genDaily(unit.todayLitres),[unit.id]);
@@ -101,10 +113,10 @@ function UnitDetail({unit,onBack}){
   return(
     <div>
       <button onClick={onBack} style={backBtn}><span style={{fontSize:18}}>←</span> Back to Site</button>
-      <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"32px 36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
+      <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"24px 28px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
         <div style={{position:"absolute",right:-30,top:-30}}><Ripple size={200} opacity={0.04} animate/></div>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
             <span style={{width:12,height:12,borderRadius:"50%",background:unit.status==="active"?C.green:C.red,boxShadow:`0 0 12px ${unit.status==="active"?"rgba(0,232,157,.4)":"rgba(255,68,88,.4)"}`}}/>
             <span style={{fontSize:22,fontWeight:700,color:C.text}}>{unit.name}</span>
             <span style={{fontSize:10,padding:"3px 10px",borderRadius:6,background:`${prodColor}15`,color:prodColor,fontWeight:600}}>{unit.product}</span>
@@ -114,11 +126,11 @@ function UnitDetail({unit,onBack}){
           <div style={{fontSize:12,color:C.textMuted}}>Serial: <span style={{fontFamily:"monospace",color:C.textSec}}>{unit.id}</span> · Operator: {unit.operator} · Installed: {unit.installed}</div>
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
         {[{val:`${unit.currentFlow.toFixed(1)}`,u:"L/min",label:"Current Flow",color:C.cyan},{val:`${unit.todayLitres.toLocaleString()}`,u:"L",label:"Today",color:C.green},{val:`${unit.totalLitres.toLocaleString()}`,u:"L",label:"All Time",color:C.blue},{val:unit.status==="active"?timeAgo(unit.lastSeen):"Offline",u:"",label:"Last Seen",color:unit.status==="active"?C.green:C.red}].map((c,i)=>(
-          <div key={i} style={{background:C.card,borderRadius:12,padding:"20px 18px",border:`1px solid ${C.cardBorder}`}}>
+          <div key={i} style={{background:C.card,borderRadius:12,padding:"18px 16px",border:`1px solid ${C.cardBorder}`}}>
             <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{c.label}</div>
-            <div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{fontSize:28,fontWeight:800,color:c.color}}>{c.val}</span><span style={{fontSize:13,color:C.textMuted}}>{c.u}</span></div>
+            <div style={{display:"flex",alignItems:"baseline",gap:4}}><span style={{fontSize:26,fontWeight:800,color:c.color}}>{c.val}</span><span style={{fontSize:12,color:C.textMuted}}>{c.u}</span></div>
           </div>))}
       </div>
       <div className="fi" style={{...panel,marginBottom:14}}>
@@ -128,13 +140,13 @@ function UnitDetail({unit,onBack}){
         </ResponsiveContainer>
       </div>
       <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
-        <div style={{...panel,flex:"1 1 300px"}}>
+        <div style={{...panel,flex:"1 1 280px"}}>
           <h3 style={hd}>Today's Pattern <span style={hdSub}>hourly</span></h3>
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={hourlyData}><defs><linearGradient id="uGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.green} stopOpacity={0.15}/><stop offset="100%" stopColor={C.green} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/><Area type="monotone" dataKey="litres" stroke={C.green} fill="url(#uGrad)" strokeWidth={1.5} dot={false}/></AreaChart>
           </ResponsiveContainer>
         </div>
-        <div style={{...panel,flex:"1 1 300px"}}>
+        <div style={{...panel,flex:"1 1 280px"}}>
           <h3 style={hd}>Weekly Trend <span style={hdSub}>12 weeks</span></h3>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={weeklyData}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="week" tick={{fill:C.textMuted,fontSize:8}} interval={1} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={40} tickFormatter={v=>`${(v/1000).toFixed(1)}k`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v.toLocaleString()}L`,"Weekly"]}/><Line type="monotone" dataKey="litres" stroke={C.purple} strokeWidth={2} dot={{r:3,fill:C.purple}} activeDot={{r:5}}/></LineChart>
@@ -150,21 +162,20 @@ function SiteDetail({siteName,siteUnits,onBack,onSelectUnit}){
   const totalL=siteUnits.reduce((s,u)=>s+u.totalLitres,0);
   const todayL=siteUnits.reduce((s,u)=>s+u.todayLitres,0);
   const active=siteUnits.filter(u=>u.status==="active").length;
-  const country=siteUnits[0]?.country;
-  const operator=siteUnits[0]?.operator;
+  const country=siteUnits[0]?.country;const operator=siteUnits[0]?.operator;
   const dailyData=useMemo(()=>genDaily(todayL),[siteName]);
   return(
     <div>
       <button onClick={onBack} style={backBtn}><span style={{fontSize:18}}>←</span> Back to Overview</button>
-      <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"32px 36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
+      <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"24px 28px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
         <div style={{position:"absolute",right:-30,top:-30}}><Ripple size={200} opacity={0.04} animate/></div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:600,marginBottom:10}}>Site Overview</div>
-          <div style={{fontSize:24,fontWeight:700,color:C.text,marginBottom:6}}>{FL[country]} {siteName}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,marginBottom:6}}>{FL[country]} {siteName}</div>
           <div style={{fontSize:13,color:C.textSec,marginBottom:16}}>Operator: {operator} · {siteUnits.length} units · {active} online</div>
           <div style={{display:"flex",gap:32,flexWrap:"wrap"}}>
-            <div><span style={{fontSize:28,fontWeight:800,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
-            <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:28,fontWeight:800,color:C.blue}}>{totalL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>all time</span></div>
+            <div><span style={{fontSize:26,fontWeight:800,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
+            <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:26,fontWeight:800,color:C.blue}}>{totalL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>all time</span></div>
           </div>
         </div>
       </div>
@@ -187,13 +198,12 @@ function SiteDetail({siteName,siteUnits,onBack,onSelectUnit}){
                   <tr key={u.id} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>onSelectUnit(u)}>
                     <td style={tdS}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:u.status==="active"?C.green:C.red,boxShadow:`0 0 8px ${u.status==="active"?"rgba(0,232,157,.35)":"rgba(255,68,88,.3)"}`}}/></td>
                     <td style={{...tdS,fontFamily:"monospace",fontSize:10,color:C.textMuted}}>{u.id}</td>
-                    <td style={{...tdS,fontWeight:600,color:C.text}}>{u.name}</td>
+                    <td style={{...tdS,fontWeight:600,color:C.text}}>{u.name} <span style={{fontSize:10,color:C.cyan}}>→</span></td>
                     <td style={tdS}><span style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:pb,color:pc,fontWeight:500}}>{u.product}</span></td>
                     <td style={{...tdS,color:C.cyan,fontWeight:600}}>{u.todayLitres}L</td>
                     <td style={{...tdS,color:C.textSec}}>{u.totalLitres.toLocaleString()}L</td>
                     <td style={tdS}>{u.status==="active"?(<span style={{display:"flex",alignItems:"center",gap:5}}><span style={{color:C.cyan,fontWeight:600}}>{u.currentFlow.toFixed(1)}</span><span style={{color:C.textMuted,fontSize:10}}>L/min</span></span>):(<span style={{padding:"2px 10px",borderRadius:10,fontSize:9.5,background:"rgba(255,68,88,.08)",color:C.red,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>Offline · {timeAgo(u.lastSeen)}</span>)}</td>
-                  </tr>);
-              })}
+                  </tr>);})}
             </tbody>
           </table>
         </div>
@@ -204,29 +214,44 @@ function SiteDetail({siteName,siteUnits,onBack,onSelectUnit}){
 
 // ─── MAIN DASHBOARD ───────────────────────────────────────
 export default function SanzonateDashboard(){
-  const[user,setUser]=useState(null);
+  // Session persistence — restore user from sessionStorage on refresh
+  const[user,setUser]=useState(()=>{try{const s=sessionStorage.getItem("fbs_user");return s?JSON.parse(s):null;}catch{return null;}});
   const[units,setUnits]=useState(DEMO_UNITS);
   const[view,setView]=useState({level:"overview"});
+  const[loading,setLoading]=useState(false);
   const[dailyData]=useState(()=>genDaily(2400));
   const[hourlyData]=useState(()=>genHourly(60));
 
-  // Browser back/forward button support
+  // Save user to sessionStorage when it changes
+  useEffect(()=>{if(user){sessionStorage.setItem("fbs_user",JSON.stringify(user));}else{sessionStorage.removeItem("fbs_user");}},[user]);
+
+  // Navigation with browser history + scroll to top + page title
   const navigate=(newView)=>{
     window.history.pushState(newView,"",null);
     setView(newView);
+    window.scrollTo({top:0,behavior:"smooth"});
   };
   const goHome=()=>navigate({level:"overview"});
 
+  // Update page title based on current view
   useEffect(()=>{
-    // Set initial history state
+    const base="Flow by Sanzonate";
+    if(view.level==="site") document.title=`${view.siteName} · ${base}`;
+    else if(view.level==="unit"){const u=units.find(x=>x.id===view.unitId);document.title=u?`${u.name} · ${u.site} · ${base}`:base;}
+    else document.title=`Aquaflow Impact Portal · ${base}`;
+  },[view,units]);
+
+  // Browser back/forward support
+  useEffect(()=>{
     window.history.replaceState({level:"overview"},"",null);
     const handlePop=(e)=>{
-      if(e.state){setView(e.state);}else{setView({level:"overview"});}
+      if(e.state){setView(e.state);window.scrollTo({top:0,behavior:"smooth"});}else{setView({level:"overview"});}
     };
     window.addEventListener("popstate",handlePop);
     return()=>window.removeEventListener("popstate",handlePop);
   },[]);
 
+  // Live data simulation
   useEffect(()=>{
     const simIv=setInterval(()=>{setUnits(p=>p.map(u=>{
       if(u.status==="offline")return u;
@@ -235,9 +260,13 @@ export default function SanzonateDashboard(){
     return()=>clearInterval(simIv);
   },[]);
 
+  const handleLogin=(u)=>{setLoading(true);setTimeout(()=>{setUser(u);setLoading(false);},600);};
+  const handleLogout=()=>{setUser(null);setView({level:"overview"});};
+
   const visibleUnits=user?.role==="operator"?units.filter(u=>u.operator===user.operator):units;
 
-  if(!user)return<LoginScreen onLogin={setUser}/>;
+  if(!user)return<LoginScreen onLogin={handleLogin}/>;
+  if(loading)return<LoadingScreen/>;
 
   const totalL=visibleUnits.reduce((s,u)=>s+u.totalLitres,0);
   const todayL=visibleUnits.reduce((s,u)=>s+u.todayLitres,0);
@@ -251,8 +280,6 @@ export default function SanzonateDashboard(){
   visibleUnits.forEach(u=>{if(!siteMap[u.site])siteMap[u.site]={litres:0,today:0,units:0,operator:u.operator,country:u.country,sts:[]};siteMap[u.site].litres+=u.totalLitres;siteMap[u.site].today+=u.todayLitres;siteMap[u.site].units+=1;siteMap[u.site].sts.push(u.status);});
   const siteS=Object.entries(siteMap).sort((a,b)=>b[1].litres-a[1].litres);
 
-
-  // Render content based on current view level
   const renderContent=()=>{
     if(view.level==="unit"){
       const unit=visibleUnits.find(u=>u.id===view.unitId);
@@ -263,36 +290,35 @@ export default function SanzonateDashboard(){
       const siteUnits=visibleUnits.filter(u=>u.site===view.siteName);
       return<SiteDetail siteName={view.siteName} siteUnits={siteUnits} onBack={goHome} onSelectUnit={u=>navigate({level:"unit",unitId:u.id})}/>;
     }
-    // Overview
     return(
       <>
-        <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"36px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
+        <div className="fi" style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#060612 0%,#0a0a18 50%,#000 100%)",borderRadius:16,padding:"28px 32px",marginBottom:24,border:`1px solid ${C.cardBorder}`}}>
           <div style={{position:"absolute",right:-40,top:-40}}><Ripple size={280} opacity={0.05} animate/></div>
           <div style={{position:"absolute",left:-60,bottom:-60}}><Ripple size={180} opacity={0.03}/></div>
           <div style={{position:"relative",zIndex:1}}>
             <div style={{fontSize:10,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:600,marginBottom:12}}>Total Aqueous Ozone Produced · {user.role==="operator"?user.name:"Sanzonate Aquaflow Fleet"}</div>
             <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
-              <span style={{fontSize:64,fontWeight:900,lineHeight:1,letterSpacing:"-0.04em",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{(totalL/1000).toFixed(1)}</span>
-              <span style={{fontSize:28,fontWeight:400,color:C.textSec}}>m³</span>
-              <span style={{fontSize:15,color:C.textMuted,marginLeft:8}}>({totalL.toLocaleString()} litres)</span>
+              <span style={{fontSize:"clamp(36px,8vw,64px)",fontWeight:900,lineHeight:1,letterSpacing:"-0.04em",background:`linear-gradient(135deg,${C.cyan},${C.blue})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{(totalL/1000).toFixed(1)}</span>
+              <span style={{fontSize:"clamp(16px,4vw,28px)",fontWeight:400,color:C.textSec}}>m³</span>
+              <span style={{fontSize:"clamp(11px,2vw,15px)",color:C.textMuted,marginLeft:8}}>({totalL.toLocaleString()} litres)</span>
             </div>
-            <div style={{marginTop:16,display:"flex",gap:32,flexWrap:"wrap"}}>
-              <div><span style={{fontSize:24,fontWeight:700,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
-              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.text}}>{active}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>units active</span></div>
-              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.green}}>{siteS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>sites</span></div>
-              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:32}}><span style={{fontSize:24,fontWeight:700,color:C.amber}}>{opS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>operators</span></div>
+            <div style={{marginTop:16,display:"flex",gap:"clamp(16px,3vw,32px)",flexWrap:"wrap"}}>
+              <div><span style={{fontSize:"clamp(16px,3vw,24px)",fontWeight:700,color:C.cyan}}>{todayL.toLocaleString()}L</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>today</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:"clamp(12px,2vw,32px)"}}><span style={{fontSize:"clamp(16px,3vw,24px)",fontWeight:700,color:C.text}}>{active}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>units active</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:"clamp(12px,2vw,32px)"}}><span style={{fontSize:"clamp(16px,3vw,24px)",fontWeight:700,color:C.green}}>{siteS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>sites</span></div>
+              <div style={{borderLeft:`1px solid ${C.cardBorder}`,paddingLeft:"clamp(12px,2vw,32px)"}}><span style={{fontSize:"clamp(16px,3vw,24px)",fontWeight:700,color:C.amber}}>{opS.length}</span><span style={{fontSize:12,color:C.textMuted,marginLeft:8}}>operators</span></div>
             </div>
           </div>
         </div>
 
         <div className="fi" style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap",animationDelay:".15s"}}>
-          <div style={{...panel,flex:"2 1 500px"}}>
+          <div style={{...panel,flex:"2 1 300px"}}>
             <h3 style={hd}>Daily Aquaflow Production <span style={hdSub}>30 days · all sites</span></h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={dailyData} barSize={6}><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="date" tick={{fill:C.textMuted,fontSize:9}} interval={4} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={36} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} cursor={{fill:"rgba(0,200,255,.03)"}} formatter={v=>[`${v}L`,"Produced"]} labelStyle={{color:C.textSec}}/><Bar dataKey="litres" fill={C.cyan} radius={[3,3,0,0]} opacity={0.85}/></BarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{...panel,flex:"1 1 300px"}}>
+          <div style={{...panel,flex:"1 1 250px"}}>
             <h3 style={hd}>Today's Pattern <span style={hdSub}>hourly</span></h3>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={hourlyData}><defs><linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.cyan} stopOpacity={0.15}/><stop offset="100%" stopColor={C.cyan} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#111122" vertical={false}/><XAxis dataKey="hour" tick={{fill:C.textMuted,fontSize:9}} interval={3} axisLine={false} tickLine={false}/><YAxis tick={{fill:C.textMuted,fontSize:9}} axisLine={false} tickLine={false} width={28} tickFormatter={v=>`${v}L`}/><Tooltip contentStyle={ttS} labelStyle={{color:C.textSec}} formatter={v=>[`${v}L`,"Flow"]}/><Area type="monotone" dataKey="litres" stroke={C.cyan} fill="url(#aGrad)" strokeWidth={1.5} dot={false} name="Litres"/></AreaChart>
@@ -307,14 +333,13 @@ export default function SanzonateDashboard(){
               <span style={{fontSize:18,width:28,textAlign:"center"}}>{i===0?"\u{1F947}":i===1?"\u{1F948}":i===2?"\u{1F949}":`${i+1}.`}</span>
               <span style={{fontSize:16}}>{FL[data.country]||""}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",alignItems:"baseline",gap:8}}><span style={{fontSize:14,fontWeight:600}}>{name}</span><span style={{fontSize:11,color:C.textMuted}}>{data.sites.size} sites · {data.units} units</span></div>
+                <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}><span style={{fontSize:14,fontWeight:600}}>{name}</span><span style={{fontSize:11,color:C.textMuted}}>{data.sites.size} sites · {data.units} units</span></div>
                 <div style={{height:4,borderRadius:2,background:"#111122",marginTop:6}}><div style={{height:"100%",borderRadius:2,background:`linear-gradient(90deg,${C.cyan}88,${C.cyan})`,width:`${(data.litres/mL)*100}%`,transition:"width .6s"}}/></div>
               </div>
-              <div style={{textAlign:"right",minWidth:100}}><div style={{fontSize:16,fontWeight:700,color:C.cyan}}>{(data.litres/1000).toFixed(1)}k L</div><div style={{fontSize:11,color:C.textMuted}}>+{data.today.toLocaleString()}L today</div></div>
+              <div style={{textAlign:"right",minWidth:80}}><div style={{fontSize:16,fontWeight:700,color:C.cyan}}>{(data.litres/1000).toFixed(1)}k L</div><div style={{fontSize:11,color:C.textMuted}}>+{data.today.toLocaleString()}L today</div></div>
             </div>);})}
         </div>
 
-        {/* SITE COMPARISON — clickable rows */}
         <div className="fi" style={{...panel,marginBottom:24,animationDelay:".3s"}}>
           <h3 style={hd}>Sites <span style={hdSub}>{siteS.length} sites · click to view</span></h3>
           <div style={{overflowX:"auto"}}>
@@ -324,7 +349,7 @@ export default function SanzonateDashboard(){
                 {siteS.map(([name,data])=>{const allOn=data.sts.every(s=>s==="active");const anyOff=data.sts.some(s=>s==="offline");return(
                   <tr key={name} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>navigate({level:"site",siteName:name})}>
                     <td style={tdS}><span style={{fontSize:14}}>{FL[data.country]}</span></td>
-                    <td style={{...tdS,fontWeight:600,color:C.text}}>{name} <span style={{fontSize:10,color:C.cyan,marginLeft:4}}>→</span></td>
+                    <td style={{...tdS,fontWeight:600,color:C.text}}>{name} <span style={{fontSize:10,color:C.cyan}}>→</span></td>
                     <td style={{...tdS,color:C.textMuted,fontSize:11}}>{data.operator}</td>
                     <td style={{...tdS,color:C.textSec}}>{data.units}</td>
                     <td style={{...tdS,color:C.cyan,fontWeight:600}}>{data.today.toLocaleString()}L</td>
@@ -349,24 +374,22 @@ export default function SanzonateDashboard(){
         .rh:hover{background:rgba(0,200,255,.03)!important}
         .clickrow{cursor:pointer;transition:background .15s}
         .clickrow:hover{background:rgba(0,200,255,.05)!important}
+        @media(max-width:640px){header{padding:0 14px!important} main{padding:20px 12px!important}}
       `}</style>
 
       <header style={{height:60,padding:"0 28px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.cardBorder}`,background:"linear-gradient(180deg,#080810 0%,#000 100%)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:14,cursor:"pointer"}} onClick={goHome}>
-          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:36,height:36,borderRadius:8,objectFit:"cover"}} onError={e=>{e.target.style.display="none"}}/>
-          <svg width="30" height="30" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="none" stroke={C.ring} strokeWidth="0.7" opacity="0.4"/><circle cx="17" cy="17" r="12" fill="none" stroke={C.blue} strokeWidth="0.8" opacity="0.5"/><circle cx="17" cy="17" r="8.5" fill="none" stroke={C.cyan} strokeWidth="1" opacity="0.7"/><circle cx="17" cy="17" r="5" fill="none" stroke={C.cyan} strokeWidth="1.2"/><circle cx="17" cy="17" r="2.5" fill={C.cyan}/></svg>
-          <span style={{fontSize:17,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase"}}>SANZ<span style={{color:C.cyan}}>O</span>NATE</span>
-          <span style={{fontSize:9,color:C.textMuted,letterSpacing:"0.1em",textTransform:"uppercase",paddingLeft:14,borderLeft:`1px solid ${C.cardBorder}`}}>Aquaflow Impact Portal</span>
+        <div style={{display:"flex",alignItems:"center",gap:14,cursor:"pointer",minWidth:0}} onClick={goHome}>
+          <img src="https://www.sanzonate.com/wp-content/uploads/2020/12/cropped-SANZONATE-Logo-scaled-1-270x270.jpg" alt="Sanzonate" style={{width:36,height:36,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.target.style.display="none"}}/>
+          <svg width="30" height="30" viewBox="0 0 34 34" style={{flexShrink:0}}><circle cx="17" cy="17" r="16" fill="none" stroke={C.ring} strokeWidth="0.7" opacity="0.4"/><circle cx="17" cy="17" r="12" fill="none" stroke={C.blue} strokeWidth="0.8" opacity="0.5"/><circle cx="17" cy="17" r="8.5" fill="none" stroke={C.cyan} strokeWidth="1" opacity="0.7"/><circle cx="17" cy="17" r="5" fill="none" stroke={C.cyan} strokeWidth="1.2"/><circle cx="17" cy="17" r="2.5" fill={C.cyan}/></svg>
+          <span style={{fontSize:17,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",whiteSpace:"nowrap"}}>SANZ<span style={{color:C.cyan}}>O</span>NATE</span>
+          <span className="hide-mobile" style={{fontSize:9,color:C.textMuted,letterSpacing:"0.1em",textTransform:"uppercase",paddingLeft:14,borderLeft:`1px solid ${C.cardBorder}`,whiteSpace:"nowrap"}}>Aquaflow Impact Portal</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
           <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f"}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 2s ease-in-out infinite"}}/>
-            <span style={{fontSize:11,color:C.textSec}}>{active}/{visibleUnits.length} Online</span>
+            <span style={{fontSize:11,color:C.textSec}}>{active}/{visibleUnits.length}</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer"}} onClick={()=>{setUser(null);navigate({level:"overview"});}}>
-            <span style={{fontSize:11,color:C.textSec}}>{user.name}</span>
-            <span style={{fontSize:10,color:C.textMuted}}>Sign out</span>
-          </div>
+          <div style={{padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer",fontSize:11,color:C.textMuted}} onClick={handleLogout}>Sign out</div>
         </div>
       </header>
 
