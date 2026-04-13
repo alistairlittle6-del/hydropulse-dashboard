@@ -206,9 +206,26 @@ function SiteDetail({siteName,siteUnits,onBack,onSelectUnit}){
 export default function SanzonateDashboard(){
   const[user,setUser]=useState(null);
   const[units,setUnits]=useState(DEMO_UNITS);
-  const[view,setView]=useState({level:"overview"});// level: overview | site | unit
+  const[view,setView]=useState({level:"overview"});
   const[dailyData]=useState(()=>genDaily(2400));
   const[hourlyData]=useState(()=>genHourly(60));
+
+  // Browser back/forward button support
+  const navigate=(newView)=>{
+    window.history.pushState(newView,"",null);
+    setView(newView);
+  };
+  const goHome=()=>navigate({level:"overview"});
+
+  useEffect(()=>{
+    // Set initial history state
+    window.history.replaceState({level:"overview"},"",null);
+    const handlePop=(e)=>{
+      if(e.state){setView(e.state);}else{setView({level:"overview"});}
+    };
+    window.addEventListener("popstate",handlePop);
+    return()=>window.removeEventListener("popstate",handlePop);
+  },[]);
 
   useEffect(()=>{
     const simIv=setInterval(()=>{setUnits(p=>p.map(u=>{
@@ -234,18 +251,17 @@ export default function SanzonateDashboard(){
   visibleUnits.forEach(u=>{if(!siteMap[u.site])siteMap[u.site]={litres:0,today:0,units:0,operator:u.operator,country:u.country,sts:[]};siteMap[u.site].litres+=u.totalLitres;siteMap[u.site].today+=u.todayLitres;siteMap[u.site].units+=1;siteMap[u.site].sts.push(u.status);});
   const siteS=Object.entries(siteMap).sort((a,b)=>b[1].litres-a[1].litres);
 
-  const goHome=()=>setView({level:"overview"});
 
   // Render content based on current view level
   const renderContent=()=>{
     if(view.level==="unit"){
       const unit=visibleUnits.find(u=>u.id===view.unitId);
       if(!unit)return null;
-      return<UnitDetail unit={unit} onBack={()=>setView({level:"site",siteName:unit.site})}/>;
+      return<UnitDetail unit={unit} onBack={()=>navigate({level:"site",siteName:unit.site})}/>;
     }
     if(view.level==="site"){
       const siteUnits=visibleUnits.filter(u=>u.site===view.siteName);
-      return<SiteDetail siteName={view.siteName} siteUnits={siteUnits} onBack={goHome} onSelectUnit={u=>setView({level:"unit",unitId:u.id})}/>;
+      return<SiteDetail siteName={view.siteName} siteUnits={siteUnits} onBack={goHome} onSelectUnit={u=>navigate({level:"unit",unitId:u.id})}/>;
     }
     // Overview
     return(
@@ -306,7 +322,7 @@ export default function SanzonateDashboard(){
               <thead><tr>{["","Site","Operator","Units","Today","All Time","Status"].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead>
               <tbody>
                 {siteS.map(([name,data])=>{const allOn=data.sts.every(s=>s==="active");const anyOff=data.sts.some(s=>s==="offline");return(
-                  <tr key={name} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>setView({level:"site",siteName:name})}>
+                  <tr key={name} className="clickrow" style={{borderBottom:"1px solid #0a0a14"}} onClick={()=>navigate({level:"site",siteName:name})}>
                     <td style={tdS}><span style={{fontSize:14}}>{FL[data.country]}</span></td>
                     <td style={{...tdS,fontWeight:600,color:C.text}}>{name} <span style={{fontSize:10,color:C.cyan,marginLeft:4}}>→</span></td>
                     <td style={{...tdS,color:C.textMuted,fontSize:11}}>{data.operator}</td>
@@ -347,7 +363,7 @@ export default function SanzonateDashboard(){
             <span style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:11,color:C.textSec}}>{active}/{visibleUnits.length} Online</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer"}} onClick={()=>{setUser(null);setView({level:"overview"});}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:20,border:`1px solid ${C.cardBorder}`,background:"#0a0a0f",cursor:"pointer"}} onClick={()=>{setUser(null);navigate({level:"overview"});}}>
             <span style={{fontSize:11,color:C.textSec}}>{user.name}</span>
             <span style={{fontSize:10,color:C.textMuted}}>Sign out</span>
           </div>
